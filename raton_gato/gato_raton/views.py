@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.http import HttpResponseForbidden
+from datamodel import constants
 
 def index(request):
 	# Query the database for a list of ALL categories currently stored.
@@ -21,3 +23,18 @@ def index(request):
 	context_dict['pages'] = "pages_list"
 	# Render the response and send it back!
 	return render(request, 'index.html', context_dict)
+
+def anonymous_required(f):
+    def wrapped(request):
+        if request.user.is_authenticated:
+            return HttpResponseForbidden(
+                errorHTTP(request, exception="Action restricted to anonymous users"))
+        else:
+            return f(request)
+    return wrapped
+
+
+def errorHTTP(request, exception=None):
+    context_dict = {}
+    context_dict[constants.ERROR_MESSAGE_ID] = exception
+    return render(request, "mouse_cat/error.html", context_dict)
