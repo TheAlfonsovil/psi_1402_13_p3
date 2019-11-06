@@ -11,7 +11,7 @@ class User(models.Model):
     password = models.CharField(unique=True, max_length=128)
 
     def save(self, *arg, **kwargs):
-		super(User, self).save(*args, **kwargs)
+        super(User, self).save(*args, **kwargs)
 
     def __str__(self):
         return self #mirar en los test de models como se imprime
@@ -35,11 +35,9 @@ class Game(models.Model):
                     31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63}
     
     def save(self, *arg, **kwargs):
-        if (self.cat1 in self.valid_fields) and (self.cat2 in self.valid_fields)
-            and (self.cat3 in self-valid_fields) and (self.cat4 in self.valid_fields)
-            and (self.mouse in self.valid_fields):
+        if (self.cat1 in self.valid_fields) and (self.cat2 in self.valid_fields) and (self.cat3 in self-valid_fields) and (self.cat4 in self.valid_fields) and (self.mouse in self.valid_fields):
 
-            return super(Game, self).save(*args, **kwargs)
+                return super(Game, self).save(*args, **kwargs)
 
         else:
             return None
@@ -66,44 +64,44 @@ class Move(models.Model):
     esquina_bd = {63}
 
     def save(self, *arg, **kwargs):
-        if (self.player = self.game.cat_user):
-                if (self.origin in self.borde_izq) and (self.target = self.origin + 9):
+        if (self.player == self.game.cat_user):
+                if (self.origin in self.borde_izq) and (self.target == self.origin + 9):
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in self.borde_dcha) and (self.target = self.origin + 7):
+                if (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
                     return super(Move, self).save(*args, **kwargs) #valid move
 
                 if (self.origin in borde_bot):
                     return None #Invalid move                
 
-                if (self.target = self.origin + 9) or (target = self.origin + 7):
-		            return super(Move, self).save(*args, **kwargs) #valid move
-        elif (self.player = self.game.mouse_user):
-                if (self.origin in self.borde_izq_mouse) and
-                   ((self.target = self.origin + 9) or (self.target = self.origin - 7)):
+                if (self.target == self.origin + 9) or (target == self.origin + 7):
+                    return super(Move, self).save(*args, **kwargs) #valid move
+        elif (self.player == self.game.mouse_user):
+                if ((self.origin in self.borde_izq_mouse) and
+                   ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in self.borde_dcha) and
-                   ((self.target = self.origin + 7) or (self.target = self.origin - 9)):
+                if ((self.origin in self.borde_dcha) and
+                   ((self.target == self.origin + 7) or (self.target == self.origin - 9))):
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in borde_bot_mouse) and 
-                   ((self.target = self.origin - 7) or (self.target = self.origin - 9): 
+                if ((self.origin in borde_bot_mouse) and 
+                   ((self.target == self.origin - 7) or (self.target == self.origin - 9))): 
                     return super(Move, self).save(*args, **kwargs) #valid move
                 
-                if (self.origin in borde_top_mouse) and 
-                   ((self.target = self.origin + 7) or (self.target = self.origin + 9): 
+                if ((self.origin in borde_top_mouse) and 
+                   ((self.target == self.origin + 7) or (self.target == self.origin + 9))): 
                     return super(Move, self).save(*args, **kwargs) #valid move  
 
-                if (self.origin in esquina_ti) and (self.target = self.origin + 9): 
+                if ((self.origin in esquina_ti) and (self.target == self.origin + 9)): 
                     return super(Move, self).save(*args, **kwargs) #valid move   
 
-                if (self.origin in esquina_bd) and (self.target = self.origin - 9): 
+                if ((self.origin in esquina_bd) and (self.target == self.origin - 9)): 
                     return super(Move, self).save(*args, **kwargs) #valid move    
             
-                if (self.target = self.origin + 9) or (target = self.origin + 7) or:
-                   (self.target = self.origin - 9) or (target = self.origin - 7)
-		            return super(Move, self).save(*args, **kwargs) #valid move
+                if ((self.target == self.origin + 9) or (target == self.origin + 7) or
+                   (self.target == self.origin - 9) or (target == self.origin - 7)):
+                    return super(Move, self).save(*args, **kwargs) #valid move
 
         else: 
             return None

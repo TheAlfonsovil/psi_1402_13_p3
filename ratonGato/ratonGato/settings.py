@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'ratonGato.wsgi.application'
 # }
 
 DATABASES = {}
-	DATABASES['default']= dj_database_url.config(default='postgres://alumnodb:alumnodb@localhost:5432/psi')
+DATABASES['default']= dj_database_url.config(default='postgres://alumnodb:alumnodb@localhost:5432/psi')
 
 
 # Password validation
