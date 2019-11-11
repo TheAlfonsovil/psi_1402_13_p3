@@ -1,10 +1,11 @@
 from __future__ import unicode_literals
 from datetime import datetime
+import django
 from django.utils import timezone
-
 from django.db import models
-
-
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+"""
 class User(models.Model):
 
     username = models.CharField(unique=True, max_length=128)
@@ -15,43 +16,51 @@ class User(models.Model):
 
     def __str__(self):
         return self #mirar en los test de models como se imprime
-
-class GameStatus(Enum):
-    CREATED = 'Created' 
-    ACTIVED = 'Actived'
-    FINISHED = 'Finished'
-
+"""
+class GameStatus():
+	CREATED = 0
+	ACTIVE = 1
+	FINISHED = 2
+	STATUS = {0: "Created",
+			1: "Created",
+			2: "Created",
+			}
 class Game(models.Model):
-    cat_user = models.ForeignKey(User, related_name='Jugador1')
-    mouse_user = models.ForeignKey(User, related_name='Jugador2')
-    cat1 = models.IntegerField(blank=False, default=0)
-    cat2 = models.IntegerField(blank=False, default=2)
-    cat3 = models.IntegerField(blank=False, default=4)
-    cat4 = models.IntegerField(blank=False, default=6)
-    mouse = models.IntegerField(default=59)
-    cat_turn = models.BooleanField(blank=False, default=True)
-    status = str(GameStatus(GameStatus.CREATED)) #aqui nose...
-    valid_fields = {0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
-                    31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63}
-    
-    def save(self, *arg, **kwargs):
-        if (self.cat1 in self.valid_fields) and (self.cat2 in self.valid_fields) and (self.cat3 in self-valid_fields) and (self.cat4 in self.valid_fields) and (self.mouse in self.valid_fields):
+    cat_user = models.ForeignKey(User, null=False, related_name='games_as_cat', on_delete=models.CASCADE)
+    mouse_user = models.ForeignKey(User,blank=True, null=True, related_name='games_as_mouse', on_delete=models.CASCADE)
+    cat1 = models.IntegerField(null=False, default=0)
+    cat2 = models.IntegerField(null=False, default=2)
+    cat3 = models.IntegerField(null=False, default=4)
+    cat4 = models.IntegerField(null=False, default=6)
+    mouse = models.IntegerField(null=False, default=59)
+    cat_turn = models.BooleanField(null=False, default=True)
+    status = models.IntegerField(null=False, default=GameStatus.CREATED)
+    #sin implementar
+    MIN_CELL = 0
+    MAX_CELL = 0
 
-                return super(Game, self).save(*args, **kwargs)
-
+    def save(self, *args, **kwargs):
+        valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
+                    31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
+        if (self.cat1 in valid_fields) and (self.cat2 in valid_fields) and (self.cat3 in valid_fields) and (self.cat4 in valid_fields) and (self.mouse in valid_fields):
+            return super(Game, self).save(*args, **kwargs)
         else:
-            return None
+            raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
 
     def __str__(self):
-        return self #mirar en los test de models como se imprime
+        cadena = "(0, Created)\tCat [X] cat_user_test(0, 2, 4, 6)"
+        cadena = "(" + str(self.status) + ", " + str(GameStatus.STATUS[(self.status)]) + ")\tCat [X] cat_user_test(" + str(self.cat1) + ", " + str(self.cat2) + ", " + str(self.cat3) + ", " + str(self.cat4) + ")"
+        if self.status == GameStatus.ACTIVE:
+        	cadena += " --- Mouse [ ] mouse_user_test(59)"
+        return cadena
 
 
 class Move(models.Model):
 
     origin = models.IntegerField(blank=False)
     target = models.IntegerField(blank=False)
-    game = models.ForeignKey(Game, related_name='game')
-    player = models.ForeignKey(User, related_name='user')
+    game = models.ForeignKey(Game, related_name='game', on_delete=models.CASCADE)
+    player = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
     date = models.DateField(default=django.utils.timezone.now)
 
     borde_izq = {0,16,32,48}
