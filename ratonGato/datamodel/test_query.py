@@ -42,7 +42,7 @@ class Test(TestCase):
             self.users.append(user)
         """ Crear  un  juego  y  asignarselo  al  usuario  con  id=10 """
         game = Game(cat_user=User.objects.get(id=10))
-        game.full_clean()
+        #game.full_clean()
         game.save()
         """ Buscar todos los juegos con un solo usuario asignado """
         print(game)
@@ -61,9 +61,12 @@ class Test(TestCase):
         game.mouse_user = User.objects.get(id=11)
         game.save()
         print(game)
-        """ En la partida seleccionada, mover el segundo gato pas ́andolo de la posici ́on 2a la 11 """
-
-
+        """ En la partida seleccionada, mover el segundo gato pasandolo de la posicion 2a la 11 """
+        Move.objects.create(game=game, player=User.objects.get(id=10), origin=2, target=11)
+        print(game)
+        """ En la partida seleccionada, mover el raton de la posicion 59 a la 52 """
+        Move.objects.create(game=game, player=User.objects.get(id=11), origin=59, target=52)
+        print(game)
         """
         game = Game(cat_user=user)
         game.full_clean()

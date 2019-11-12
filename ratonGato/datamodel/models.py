@@ -43,6 +43,8 @@ class Game(models.Model):
     def save(self, *args, **kwargs):
         valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
                     31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
+        if self.cat_user != None and self.mouse_user != None and GameStatus.CREATED == self.status:
+        	self.status = GameStatus.ACTIVE
         if (self.cat1 in valid_fields) and (self.cat2 in valid_fields) and (self.cat3 in valid_fields) and (self.cat4 in valid_fields) and (self.mouse in valid_fields):
             return super(Game, self).save(*args, **kwargs)
         else:
@@ -103,7 +105,7 @@ class Move(models.Model):
                         return super(Move, self).save(*args, **kwargs) #valid move
 
                     if (self.origin in self.borde_bot):
-                        return None #Invalid move                
+                        raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']") #Invalid move                
 
                     if (self.target == self.origin + 9) or (self.target == self.origin + 7):
                         self.game.moves.append(1)
