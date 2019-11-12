@@ -22,8 +22,8 @@ class GameStatus():
 	ACTIVE = 1
 	FINISHED = 2
 	STATUS = {0: "Created",
-			1: "Created",
-			2: "Created",
+			1: "Active",
+			2: "Finished",
 			}
 class Game(models.Model):
     cat_user = models.ForeignKey(User, null=False, related_name='games_as_cat', on_delete=models.CASCADE)
@@ -35,10 +35,11 @@ class Game(models.Model):
     mouse = models.IntegerField(null=False, default=59)
     cat_turn = models.BooleanField(null=False, default=True)
     status = models.IntegerField(null=False, default=GameStatus.CREATED)
-    #sin implementar
+    #sin implementar -- solved creo
     MIN_CELL = 0
-    MAX_CELL = 0
-
+    MAX_CELL = 63
+    # Moves???
+    moves = []
     def save(self, *args, **kwargs):
         valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
                     31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
@@ -46,19 +47,35 @@ class Game(models.Model):
             return super(Game, self).save(*args, **kwargs)
         else:
             raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
-
+    def full_clean(self):
+        valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
+                    31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
+        if (self.cat1 in valid_fields) and (self.cat2 in valid_fields) and (self.cat3 in valid_fields) and (self.cat4 in valid_fields) and (self.mouse in valid_fields):
+            return super(Game, self).full_clean()
+        else:
+            raise ValidationError("Error")
     def __str__(self):
-        cadena = "(0, Created)\tCat [X] cat_user_test(0, 2, 4, 6)"
-        cadena = "(" + str(self.status) + ", " + str(GameStatus.STATUS[(self.status)]) + ")\tCat [X] cat_user_test(" + str(self.cat1) + ", " + str(self.cat2) + ", " + str(self.cat3) + ", " + str(self.cat4) + ")"
-        if self.status == GameStatus.ACTIVE:
-        	cadena += " --- Mouse [ ] mouse_user_test(59)"
+        cadena = "(" + str(self.id) + ", " + str(GameStatus.STATUS[(self.status)]) + ")\tCat ["
+        if self.cat_turn == True:
+            cadena += "X"
+        else:
+            cadena += " "
+        cadena += "] cat_user_test(" + str(self.cat1) + ", " + str(self.cat2) + ", " + str(self.cat3) + ", " + str(self.cat4) + ")"
+        #if self.status == GameStatus.ACTIVE or  self.status == GameStatus.FINISHED:
+        if self.mouse_user != None:
+            cadena += " --- Mouse ["
+            if self.cat_turn == True:
+                cadena += " "
+            else:
+                cadena += "X"
+            cadena += "] mouse_user_test(" + str(self.mouse) + ")"
         return cadena
 
 
 class Move(models.Model):
 
-    origin = models.IntegerField(blank=False)
-    target = models.IntegerField(blank=False)
+    origin = models.IntegerField(null=False)
+    target = models.IntegerField(null=False)
     game = models.ForeignKey(Game, related_name='game', on_delete=models.CASCADE)
     player = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
     date = models.DateField(default=django.utils.timezone.now)
@@ -72,48 +89,69 @@ class Move(models.Model):
     esquina_ti = {0}
     esquina_bd = {63}
 
-    def save(self, *arg, **kwargs):
-        if (self.player == self.game.cat_user):
-                if (self.origin in self.borde_izq) and (self.target == self.origin + 9):
-                    return super(Move, self).save(*args, **kwargs) #valid move
+    def save(self, *args, **kwargs):
+        if self.game.status == GameStatus.ACTIVE:
+            if (self.player == self.game.cat_user):
+                    if (self.origin in self.borde_izq) and (self.target == self.origin + 9):
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
-                    return super(Move, self).save(*args, **kwargs) #valid move
+                    if (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in borde_bot):
-                    return None #Invalid move                
+                    if (self.origin in self.borde_bot):
+                        return None #Invalid move                
 
-                if (self.target == self.origin + 9) or (target == self.origin + 7):
-                    return super(Move, self).save(*args, **kwargs) #valid move
-        elif (self.player == self.game.mouse_user):
-                if ((self.origin in self.borde_izq_mouse) and
-                   ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
-                    return super(Move, self).save(*args, **kwargs) #valid move
+                    if (self.target == self.origin + 9) or (self.target == self.origin + 7):
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
+            elif (self.player == self.game.mouse_user):
+                    if ((self.origin in self.borde_izq_mouse) and
+                       ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
 
-                if ((self.origin in self.borde_dcha) and
-                   ((self.target == self.origin + 7) or (self.target == self.origin - 9))):
-                    return super(Move, self).save(*args, **kwargs) #valid move
+                    if ((self.origin in self.borde_dcha) and
+                       ((self.target == self.origin + 7) or (self.target == self.origin - 9))):
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
 
-                if ((self.origin in borde_bot_mouse) and 
-                   ((self.target == self.origin - 7) or (self.target == self.origin - 9))): 
-                    return super(Move, self).save(*args, **kwargs) #valid move
+                    if ((self.origin in self.borde_bot_mouse) and 
+                       ((self.target == self.origin - 7) or (self.target == self.origin - 9))): 
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
+                    
+                    if ((self.origin in self.borde_top_mouse) and 
+                       ((self.target == self.origin + 7) or (self.target == self.origin + 9))): 
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move  
+
+                    if ((self.origin in self.esquina_ti) and (self.target == self.origin + 9)): 
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move   
+
+                    if ((self.origin in self.esquina_bd) and (self.target == self.origin - 9)): 
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move    
                 
-                if ((self.origin in borde_top_mouse) and 
-                   ((self.target == self.origin + 7) or (self.target == self.origin + 9))): 
-                    return super(Move, self).save(*args, **kwargs) #valid move  
-
-                if ((self.origin in esquina_ti) and (self.target == self.origin + 9)): 
-                    return super(Move, self).save(*args, **kwargs) #valid move   
-
-                if ((self.origin in esquina_bd) and (self.target == self.origin - 9)): 
-                    return super(Move, self).save(*args, **kwargs) #valid move    
-            
-                if ((self.target == self.origin + 9) or (target == self.origin + 7) or
-                   (self.target == self.origin - 9) or (target == self.origin - 7)):
-                    return super(Move, self).save(*args, **kwargs) #valid move
-
-        else: 
-            return None
+                    if ((self.target == self.origin + 9) or (self.target == self.origin + 7) or
+                       (self.target == self.origin - 9) or (self.target == self.origin - 7)):
+                        self.game.moves.append(1)
+                        self.game.save()
+                        return super(Move, self).save(*args, **kwargs) #valid move
+            else:
+                raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
+        raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
         
     def __str__(self):
         return self #mirar en los test de models como se imprime
