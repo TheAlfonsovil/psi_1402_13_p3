@@ -2,8 +2,8 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
-from .models import Game, GameStatus, Move
-from . import tests
+from datamodel.models import Game, GameStatus, Move
+from datamodel import tests
 
 class Test(TestCase):
     def setUp(self):
