@@ -55,7 +55,7 @@ class Game(models.Model):
         if (self.cat1 in valid_fields) and (self.cat2 in valid_fields) and (self.cat3 in valid_fields) and (self.cat4 in valid_fields) and (self.mouse in valid_fields):
             return super(Game, self).full_clean()
         else:
-            raise ValidationError("Error")
+            raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
     def __str__(self):
         cadena = "(" + str(self.id) + ", " + str(GameStatus.STATUS[(self.status)]) + ")\tCat ["
         if self.cat_turn == True:
@@ -157,6 +157,35 @@ class Move(models.Model):
         
     def __str__(self):
         return self #mirar en los test de models como se imprime
+
+class Counter(models.Model):
+    value = models.IntegerField(null=False, default=0)
+    #id = models.AutoField(primary_key=True)
+    class __Counter():
+        def __init__(self):
+            val = models.IntegerField(null=False, default=0)
+        def __str__(self):
+            return "Counter: " + str(val)
+    def __init__(self,value=0):
+        #models.Model.__init__(self)
+        super(Counter, self).__init__()
+        setattr(self, 'value', value)
+        self.save()
+        #if not Counter.value:
+        # Counter.value = Counter.__Counter()
+    
+    """def leer(self):
+        return Counter.instance.val
+    def incrementar(self, name):
+        Counter.instance.val+=1
+    def actualizar(self, newval):
+        Counter.instance.val=newval"""
+    def save(self, *args, **kwargs):
+        if(getattr(self, 'id')!=1):
+            raise ValidationError("Insert not allowed|Inseción no permitida")
+        #Raisear el validationError si mete un objeto con primary key distinto de 1
+        return super(Counter, self).save(*args, **kwargs)
+
 
 
     
