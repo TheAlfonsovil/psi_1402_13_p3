@@ -240,7 +240,7 @@ class CounterModelTests(TestCase):
         """ No es posible crear contadores """
         Counter.objects.inc()
         Counter.objects.inc()
-
+        print(Counter.objects.all())
         for i in [3, 4]:
             Counter.objects.inc()
             n = Counter.objects.get(value=i)

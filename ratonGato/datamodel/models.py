@@ -158,28 +158,29 @@ class Move(models.Model):
     def __str__(self):
         return self #mirar en los test de models como se imprime
 
+class CounterManager(models.Manager):
+    value= 0
+    def inc(self):
+        self.value+=1
+        return self.value
+    def get(self, value = 0):
+        if self.value != value:
+            self.value = ValidationError("Insert not allowed|Inseción no permitida")
+        return self
+    def get_current_value(self):
+        return self.value
+    def save(self, *args, **kwargs):
+        return Counter().save(*args, **kwargs)
+        
+
+
 class Counter(models.Model):
-    value = models.IntegerField(null=False, default=0)
-    #id = models.AutoField(primary_key=True)
-    class __Counter():
-        def __init__(self):
-            val = models.IntegerField(null=False, default=0)
-        def __str__(self):
-            return "Counter: " + str(val)
+    value = 0
+    objects = CounterManager()
     def __init__(self,value=0):
-        #models.Model.__init__(self)
         super(Counter, self).__init__()
         setattr(self, 'value', value)
         self.save()
-        #if not Counter.value:
-        # Counter.value = Counter.__Counter()
-    
-    """def leer(self):
-        return Counter.instance.val
-    def incrementar(self, name):
-        Counter.instance.val+=1
-    def actualizar(self, newval):
-        Counter.instance.val=newval"""
     def save(self, *args, **kwargs):
         if(getattr(self, 'id')!=1):
             raise ValidationError("Insert not allowed|Inseción no permitida")
