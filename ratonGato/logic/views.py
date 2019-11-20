@@ -35,9 +35,8 @@ def errorHTTP(request, exception=None):
 
 
 
-
+@anonymous_required
 def login_service(request):
-    anonymous_required(login_service)
     if request.method == 'POST': #Tras clicar el boton de submit
         #recuepra datos
         username = request.POST.get('username')
