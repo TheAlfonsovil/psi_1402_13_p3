@@ -56,7 +56,7 @@ def login_service(request):
             return render(request,"mouse_cat/login.html", context_dict)
     else: #Si no se ha pulsado boton
         user_form = UserForm()
-        context_dict = {'user_form': user_form}
+        context_dict = {'user_form': user_form,'error': False}
         return render(request,"mouse_cat/login.html", context_dict)
 
 
