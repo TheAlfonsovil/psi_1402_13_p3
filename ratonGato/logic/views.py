@@ -10,13 +10,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
 from datamodel import constants
+from logic.forms import UserForm
 
 # COMPROBAR AQUI COMO SON LAS FUNCIONES ->
 # https://psi1920-p3.herokuapp.com/mouse_cat/
  
 def index(request):
-	context_dict = {}
-	return render(request, 'index.html', context_dict)
+    context_dict = {}
+    return render(request, 'mouse_cat/index.html', context_dict)
 
 def anonymous_required(f):
     def wrapped(request):
@@ -36,8 +37,27 @@ def errorHTTP(request, exception=None):
 
 
 def login_service(request):
-    context_dict = {}
-    return render(request,"login.html", context_dict)
+    anonymous_required(login_service)
+    if request.method == 'POST': #Tras clicar el boton de submit
+        #recuepra datos
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        #autentica
+        user = authenticate(username=username, password=password)
+        if user: #Existe
+            if user.is_active:
+                login(request, user)
+                return redirect(reverse('index'))
+            else:
+                return HttpResponse("Your Rango account is disabled.")
+        else:
+            user_form = UserForm()
+            context_dict = {'user_form': user_form,'error': True}
+            return render(request,"mouse_cat/login.html", context_dict)
+    else: #Si no se ha pulsado boton
+        user_form = UserForm()
+        context_dict = {'user_form': user_form}
+        return render(request,"mouse_cat/login.html", context_dict)
 
 
 def logout_service(request):
