@@ -11,6 +11,7 @@ from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
 from datamodel import constants
 from logic.forms import UserForm
+from django.contrib.auth import logout
 
 # COMPROBAR AQUI COMO SON LAS FUNCIONES ->
 # https://psi1920-p3.herokuapp.com/mouse_cat/
@@ -58,25 +59,29 @@ def login_service(request):
         context_dict = {'user_form': user_form,'error': False}
         return render(request,"mouse_cat/login.html", context_dict)
 
-
+@login_required(redirect_field_name='',login_url='../')
 def logout_service(request):
+    # Since we know the user is logged in, we can now just log them out.
+    logout(request)
+    # Take the user back to the homepage.
     context_dict = {}
-    return render(request,"logout.html", context_dict)
+    return render(request,"mouse_cat/logout.html", context_dict)
+    
 
 
 def signup_service(request):
     context_dict = {}
-    return render(request,"signup.html", context_dict)
+    return render(request,"mouse_cat/signup.html", context_dict)
 
 
 def counter_service(request):
     context_dict = {}
-    return render(request,"counter.html", context_dict)
+    return render(request,"mouse_cat/counter.html", context_dict)
 
 
 def create_game_service(request):
     context_dict = {}
-    return render(request,"new_game.html", context_dict)
+    return render(request,"mouse_cat/new_game.html", context_dict)
 
 
 def join_game_service(request):
