@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
 from datamodel import constants
-from logic.forms import UserForm
+from logic.forms import UserForm, UserRegister
 from django.contrib.auth import logout
 
 # COMPROBAR AQUI COMO SON LAS FUNCIONES ->
@@ -68,10 +68,24 @@ def logout_service(request):
     return render(request,"mouse_cat/logout.html", context_dict)
     
 
-
+@anonymous_required
 def signup_service(request):
-    context_dict = {}
-    return render(request,"mouse_cat/signup.html", context_dict)
+    if request.method == 'POST':
+        user_form = UserForm(data=request.POST)
+        if user_form.is_valid():
+            user = user_form.save()
+            user.set_password(user.password)
+            user.save()
+            #user = authenticate(username=username, password=password)
+            login(request, user)
+            context_dict = {}
+            return render(request,"mouse_cat/signup.html", context_dict)
+        else:
+            print(user_form.errors)
+    else:
+        user_form = UserRegister()
+        context_dict = {'user_form': user_form}
+        return render(request,"mouse_cat/signup.html", context_dict)
 
 
 def counter_service(request):
