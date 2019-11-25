@@ -15,9 +15,9 @@ class UserRegister(forms.ModelForm):
         model = User
         fields = ('username', 'password')
 
-class Move_Form(forms.ModelForm):
-    origin = forms.CharField(widget=forms.C())
-    target = forms.CharField(widget=forms.PasswordInput())
-    class Meta:
-        model = User
-        fields = ('username', 'password')
+#class Move_Form(forms.ModelForm):
+#    origin = forms.CharField(widget=forms.C())
+#    target = forms.CharField(widget=forms.PasswordInput())
+#    class Meta:
+#        model = User
+#        fields = ('username', 'password')
