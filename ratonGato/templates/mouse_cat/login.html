@@ -6,12 +6,7 @@
     Log in to continue:
     <form id="login_form" method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        {% if error %}
-   			<b>Username/password is not valid</b><br/>
-            {{ user_form.as_p }}<br/>
-		{% else %}
-            {{ user_form.as_p }}<br/>
-        {% endif %}
+        {{ user_form.as_p }}<br/>
         <input type="hidden" name="return_service" value="{{ return_service }}" />
         <input type="submit" value="Log-In" />
     </form>

@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
 from datamodel import constants
-from logic.forms import UserForm, UserRegister
+from logic.forms import UserForm, SignupForm
 from django.contrib.auth import logout
 from datamodel.models import Game, GameStatus, Move
 from django.core.files import File
@@ -75,7 +75,7 @@ def logout_service(request):
 @anonymous_required
 def signup_service(request):
     if request.method == 'POST':
-        user_form = UserForm(data=request.POST)
+        user_form = SignupForm(data=request.POST)
         if user_form.is_valid():
             user = user_form.save()
             user.set_password(user.password)
@@ -85,9 +85,10 @@ def signup_service(request):
             context_dict = {}
             return render(request,"mouse_cat/signup.html", context_dict)
         else:
-            print(user_form.errors)
+            context_dict = {'user_form': user_form}
+            return render(request,"mouse_cat/signup.html", context_dict)
     else:
-        user_form = UserRegister()
+        user_form = SignupForm()
         context_dict = {'user_form': user_form}
         return render(request,"mouse_cat/signup.html", context_dict)
 
