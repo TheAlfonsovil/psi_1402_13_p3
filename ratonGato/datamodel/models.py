@@ -78,7 +78,7 @@ class Move(models.Model):
 
     origin = models.IntegerField(null=False)
     target = models.IntegerField(null=False)
-    game = models.ForeignKey(Game, related_name='game', on_delete=models.CASCADE, related_name='moves')
+    game = models.ForeignKey(Game, related_name='game', on_delete=models.CASCADE) #, related_name='moves'
     player = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
     date = models.DateField(default=django.utils.timezone.now)
 
