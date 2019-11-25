@@ -18,13 +18,13 @@ class User(models.Model):
         return self #mirar en los test de models como se imprime
 """
 class GameStatus():
-	CREATED = 0
-	ACTIVE = 1
-	FINISHED = 2
-	STATUS = {0: "Created",
-			1: "Active",
-			2: "Finished",
-			}
+    CREATED = 0
+    ACTIVE = 1
+    FINISHED = 2
+    STATUS = {0: "Created",
+            1: "Active",
+            2: "Finished",
+            }
 class Game(models.Model):
     cat_user = models.ForeignKey(User, null=False, related_name='games_as_cat', on_delete=models.CASCADE)
     mouse_user = models.ForeignKey(User,blank=True, null=True, related_name='games_as_mouse', on_delete=models.CASCADE)
@@ -44,7 +44,7 @@ class Game(models.Model):
         valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
                     31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
         if self.cat_user != None and self.mouse_user != None and GameStatus.CREATED == self.status:
-        	self.status = GameStatus.ACTIVE
+            self.status = GameStatus.ACTIVE
         if (self.cat1 in valid_fields) and (self.cat2 in valid_fields) and (self.cat3 in valid_fields) and (self.cat4 in valid_fields) and (self.mouse in valid_fields):
             return super(Game, self).save(*args, **kwargs)
         else:
@@ -159,38 +159,40 @@ class Move(models.Model):
         return self #mirar en los test de models como se imprime
 
 class CounterManager(models.Manager):
-    value= 0
     def inc(self):
-        self.value+=1
-        return self.value
+        #Accede a base de datos e incrementa
+        return
+
     def get(self, value = 0):
         if self.value != value:
             self.value = ValidationError("Insert not allowed|Inseción no permitida")
         return self
+
     def get_current_value(self):
         return self.value
+
     def save(self, *args, **kwargs):
-        return Counter().save(*args, **kwargs)
+        if(getattr(self, 'id')!=0):
+            raise ValidationError("Insert not allowed|Inseción no permitida")
+        return super(CounterManager, self).save(*args, **kwargs)
         
 
 
 class Counter(models.Model):
     value = 0
     objects = CounterManager()
-    def __init__(self,value=0):
+    """def __init__(self,value=0):
         super(Counter, self).__init__()
         setattr(self, 'value', value)
-        self.save()
+        self.save()"""
     def save(self, *args, **kwargs):
-        if(getattr(self, 'id')!=1):
-            raise ValidationError("Insert not allowed|Inseción no permitida")
-        #Raisear el validationError si mete un objeto con primary key distinto de 1
+        raise ValidationError("Insert not allowed|Inseción no permitida")
         return super(Counter, self).save(*args, **kwargs)
 
 
 
     
-	
-	
+    
+    
 
 
