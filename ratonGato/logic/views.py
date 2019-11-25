@@ -168,7 +168,7 @@ def move_service(request):
 	            break
         move = Move.objects.create(game=gamef, player=request.user, origin=request.form[0], target=request.form[1])
         move.save()
-        context_dict = {'game': gamef}
+        context_dict = {'game': gamef, 'move_form': MoveForm()}
         return render(request,"mouse_cat/game.html", context_dict)
     else:
         context_dict = {}
