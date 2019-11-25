@@ -4,7 +4,9 @@ import django
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from . import constants
+  
 """
 class User(models.Model):
 
@@ -159,40 +161,51 @@ class Move(models.Model):
         return self #mirar en los test de models como se imprime
 
 class CounterManager(models.Manager):
-    def inc(self):
-        #Accede a base de datos e incrementa
-        return
+    def create(self, *args, **kwargs):
+        raise ValidationError(constants.MSG_ERROR_INSERT)
 
-    def get(self, value = 0):
-        if self.value != value:
-            self.value = ValidationError("Insert not allowed|Inseción no permitida")
-        return self
+    @classmethod
+    def createCounter(cls, value):
+        counter = Counter(value=value)
+        super(Counter, counter).save()
+        return counter
+
+    def inc(self):
+        try:
+            field_name = 'value'
+            obj = Counter.objects.all()[:1].get()
+            obj.value+=1
+            Counter.objects.all().filter(pk=1).update(value=obj.value)
+            return obj.value
+        except ObjectDoesNotExist:
+            obj = CounterManager.createCounter(1)
+            return obj.value
 
     def get_current_value(self):
-        return self.value
+        try:
+            Counter.objects.get(pk=1)
+            val = Counter.objects.filter(pk=1).values('value').first()
+            return val['value']
+        except ObjectDoesNotExist:
+            obj = CounterManager.createCounter(0)
+            return obj.value
 
-    def save(self, *args, **kwargs):
+    """def save(self, *args, **kwargs):
         if(getattr(self, 'id')!=0):
             raise ValidationError("Insert not allowed|Inseción no permitida")
-        return super(CounterManager, self).save(*args, **kwargs)
+        return super(CounterManager, self).save(*args, **kwargs)"""
         
 
 
 class Counter(models.Model):
-    value = 0
+    value = models.IntegerField(default=0)
     objects = CounterManager()
     """def __init__(self,value=0):
         super(Counter, self).__init__()
         setattr(self, 'value', value)
-        self.save()"""
+        #self.save()"""
     def save(self, *args, **kwargs):
-        raise ValidationError("Insert not allowed|Inseción no permitida")
-        return super(Counter, self).save(*args, **kwargs)
+        raise ValidationError(constants.MSG_ERROR_INSERT)
 
-
-
-    
-    
-    
-
-
+    def _str_(self):
+        return "Value: {}".format(self.value)
