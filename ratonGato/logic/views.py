@@ -117,38 +117,37 @@ def join_game_service(request):
     return render(request,"mouse_cat/join_game.html", context_dict)
 
 @login_required(redirect_field_name='',login_url='../login_service')
-def select_game_service(request):
-    if request.method == 'GET':
-        games = Game.objects.order_by('id')
-        as_cat=[] #a lo mejor es []
-        for game in games:
-            if game.cat_user == request.user:
-                as_cat.add(game) # a lo mejor no se puede con add
-        as_mouse=[] #
-        for game in games:
-            if game.mouse_user == request.user:
-                as_mouse.add(game) #    
-        context_dict = {'as_cat': as_cat, 'as_mouse': as_mouse}
-        return render(request,"mouse_cat/select_game.html", context_dict)
-
+def select_game_service(request, game_id = -1):
+    if request.method == 'GET':  
+        if game_id == -1:
+            as_cat = Game.objects.filter(cat_user = request.user, status=GameStatus.ACTIVE)
+            as_mouse = Game.objects.filter(mouse_user = request.user, status=GameStatus.ACTIVE)
+            context_dict = {}
+            context_dict['as_cat'] = as_cat
+            context_dict['as_mouse'] = as_mouse
+            return render(request,"mouse_cat/select_game.html", context_dict)
+        request.session['game_id'] = game_id
+       	return redirect(reverse('show_game'))
     else:
-        #POST -> hacer un showgame de juego seleccionado -> /select_game/241/  -> 241 es el id seleccionado
-        context_dict = {'as_cat': as_cat, 'as_mouse': as_mouse}
+        #POST request redirect
+        #game_id = request.POST.get('game.id')
+        request.session['game_id'] = game_id
+        context_dict = {'game_id': game_id}
         return render(request,"mouse_cat/game.html", context_dict)
 
 @login_required(redirect_field_name='',login_url='../login_service')
 def show_game_service(request):
-    if request.method == 'POST':
-        print(request.POST())
+    game_id = request.session['game_id']
     games = Game.objects.order_by('id')
     gamef = {}
+    print(game_id)
     print(request.user)
     print(request.user.id)
     for game in games:
-        if game.cat_user.id == request.user.id:
+        if game.id == game_id:
             gamef = game
             break
-
+    print(gamef)
     board = [0] * 64
     board[game.cat1] = 1
     board[game.cat2] = 1
@@ -161,14 +160,13 @@ def show_game_service(request):
 @login_required(redirect_field_name='',login_url='../login_service')
 def move_service(request):
     if request.method == 'POST':
-        data = request.json()
-        print(data)
+        print(request)
         games = Game.objects.order_by('id')
         for game in games:
             if game.cat_user.id == request.user.id:
 	            gamef = game
 	            break
-        move = Move.objects.create(game=gamef, player=request.user, origin=request.POST[0], target=request.POST[1])
+        move = Move.objects.create(game=gamef, player=request.user, origin=request.form[0], target=request.form[1])
         move.save()
         context_dict = {'game': gamef}
         return render(request,"mouse_cat/game.html", context_dict)
