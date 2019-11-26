@@ -30,21 +30,20 @@ def index(request):
 def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
-            return HttpResponseForbidden(errorHTTP(request, exception="403"))
+            return HttpResponseForbidden(errorHTTP(request, exception="Action restricted to anonymous users|Servicio restringido a usuarios anónimos"))
         else:
             return f(request)
     return wrapped
 
 
 def errorHTTP(request, exception=None):
-    context_dict = {}
-    context_dict['msg_error']="Action restricted to anonymous users|Servicio restringido a usuarios anónimos"
+    context_dict = {"msg_error": "Action restricted to anonymous users|Servicio restringido a usuarios anónimos"}
     context_dict[constants.ERROR_MESSAGE_ID] = exception
     return render(request, "mouse_cat/error.html", context_dict)
 
 
 
-@anonymous_required
+#@anonymous_required
 def login_service(request):
     if request.method == 'POST': #Tras clicar el boton de submit
         user_form = UserForm(data=request.POST)
@@ -83,7 +82,7 @@ def logout_service(request):
     return render(request,"mouse_cat/logout.html", context_dict)
     
 
-@anonymous_required
+#@anonymous_required
 def signup_service(request):
     if request.method == 'POST':
         user_form = SignupForm(data=request.POST)
@@ -105,7 +104,7 @@ def signup_service(request):
 
 
 def counter_service(request):
-    global c_gbl
+    """global c_gbl
     global c_ses
    
     # Counter.objects.all().delete()
@@ -113,6 +112,17 @@ def counter_service(request):
     counter_global = c_gbl # Counter.objects.create(value=c_gbl)
     c_gbl = c_gbl + 1
     c_ses = c_ses + 1
+    """
+
+    # get session variable
+    if "session_counter" in request.session:
+        request.session["session_counter"] = request.session["session_counter"] + 1
+    else:
+        request.session["session_counter"] = 1
+    counter_session = request.session["session_counter"]
+    Counter.objects.inc()
+    
+    counter_global=Counter.objects.get_current_value()
     context_dict = {'counter_session': counter_session, 'counter_global': counter_global}
     return render(request,"mouse_cat/counter.html", context_dict)
 
