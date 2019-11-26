@@ -9,6 +9,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
+from django.http import HttpResponseNotFound
 from datamodel import constants
 from logic.forms import UserForm, SignupForm, MoveForm
 from django.contrib.auth import logout
@@ -193,29 +194,42 @@ def show_game_service(request):
         return render(request,"mouse_cat/error.html", context_dict)
     
     games = Game.objects.order_by('id')
-    gamef = {}
+    gamef = None
     for game in games:
         if game.id == game_id:
             gamef = game
             break
+    if gamef == None:
+        #context_dict = {'msg_error': "Game selected does not exist"}
+        return HttpResponseNotFound("Game not exist")   #render(request,"mouse_cat/error.html", context_dict)
+    if gamef.status == 0: #created
+        return HttpResponseNotFound("Game not exist")   #render(request,"mouse_cat/error.html", context_dict)
+    if gamef.cat_user != request.user and gamef.mouse_user != request.user : #created
+        return HttpResponseNotFound("Game not exist")   #render(request,"mouse_cat/error.html", context_dict)
     board = [0] * 64
-    board[game.cat1] = 1
-    board[game.cat2] = 1
-    board[game.cat3] = 1
-    board[game.cat4] = 1
-    board[game.mouse] = -1
+    board[gamef.cat1] = 1
+    board[gamef.cat2] = 1
+    board[gamef.cat3] = 1
+    board[gamef.cat4] = 1
+    board[gamef.mouse] = -1
     move_form = MoveForm()
     context_dict = {'game': gamef, 'board': board, 'move_form': move_form}
     return render(request,"mouse_cat/game.html", context_dict)
 
 @login_required(redirect_field_name='',login_url='../login_service')
 def move_service(request):
+    if request.method == 'GET':
+        return HttpResponseNotFound("Error")
     if request.method == 'POST':
         move_form = MoveForm(data=request.POST)
         move_origin = int(request.POST.get('origin'))
         move_target = int(request.POST.get('target'))
         games = Game.objects.order_by('id')
 
+        try:
+            error123 = request.session['game_id']
+        except:
+            return HttpResponseNotFound("Error")
         for game in games:
             if game.id == request.session['game_id']:
                 gamef = game

@@ -661,7 +661,6 @@ class SelectGameServiceTests(GameRequiredBaseServiceTests):
     def test4(self):
         """ Selección correcta de juego como ratón y como gato """
         game = Game.objects.create(cat_user=self.user1, mouse_user=self.user2, status=GameStatus.ACTIVE)
-
         self.loginTestUser(self.client1, self.user1)
         self.assertFalse(self.client1.session.get(constants.GAME_SELECTED_SESSION_ID, False))
         self.client1.get(reverse(SELECT_GAME_SERVICE, kwargs={'game_id': game.id}), follow=True)

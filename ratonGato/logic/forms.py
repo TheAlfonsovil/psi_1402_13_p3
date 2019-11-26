@@ -54,6 +54,16 @@ class MoveForm(forms.ModelForm):
     class Meta:
         model = Move
         fields = ('origin', 'target',)
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        origin = self.cleaned_data['origin']
+        target = self.cleaned_data['target']
+        if origin<0 or origin>63:
+            raise forms.ValidationError('Error')
+        if target<0 or target>63:
+            raise forms.ValidationError('Error')
+
+        return cleaned_data
 
 
 
