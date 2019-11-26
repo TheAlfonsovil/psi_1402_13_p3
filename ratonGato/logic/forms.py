@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate
 
 
 class UserForm(forms.ModelForm):
@@ -11,6 +13,16 @@ class UserForm(forms.ModelForm):
             'username': None,
             'email': None,
         }
+    def clean(self):
+        username = self.cleaned_data['username']
+        cleaned_data = self.cleaned_data
+        #password_form = cleaned_data.get('password')
+        if User.objects.exclude(pk=self.instance.pk).filter(username=username).exists()==False:
+           raise forms.ValidationError("Username/password is not valid|Usuario/clave no válidos")
+        user = authenticate(username=self.cleaned_data['username'], password=self.cleaned_data['password'])
+        if not user:
+            raise forms.ValidationError("Username/password is not valid|Usuario/clave no válidos")
+        return cleaned_data
 
 class SignupForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
