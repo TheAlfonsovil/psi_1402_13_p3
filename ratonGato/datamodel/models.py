@@ -96,63 +96,111 @@ class Move(models.Model):
     def save(self, *args, **kwargs):
         if self.game.status == GameStatus.ACTIVE:
             if (self.player == self.game.cat_user):
-                    if (self.origin in self.borde_izq) and (self.target == self.origin + 9):
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
+                if (self.origin in self.borde_izq) and (self.target == self.origin + 9):
+                    self.game.moves.append(1)
+                    if self.game.cat1 == self.origin:
+                        self.game.cat1 = self.target
+                    if self.game.cat2 == self.origin:
+                        self.game.cat2 = self.target
+                    if self.game.cat3 == self.origin:
+                        self.game.cat3 = self.target
+                    if self.game.cat4 == self.origin:
+                        self.game.cat4 = self.target
+                    self.game.cat_turn = not self.game.cat_turn 
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
 
-                    if (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
+                if (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
+                    self.game.moves.append(1)
+                    if self.game.cat1 == self.origin:
+                        self.game.cat1 = self.target
+                    if self.game.cat2 == self.origin:
+                        self.game.cat2 = self.target
+                    if self.game.cat3 == self.origin:
+                        self.game.cat3 = self.target
+                    if self.game.cat4 == self.origin:
+                        self.game.cat4 = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
 
-                    if (self.origin in self.borde_bot):
-                        raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']") #Invalid move                
+                if (self.origin in self.borde_bot):
+                    raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']") #Invalid move                
 
-                    if (self.target == self.origin + 9) or (self.target == self.origin + 7):
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
+                if (self.target == self.origin + 9) or (self.target == self.origin + 7):
+                    self.game.moves.append(1)
+                    if self.game.cat1 == self.origin:
+                        self.game.cat1 = self.target
+                    if self.game.cat2 == self.origin:
+                        self.game.cat2 = self.target
+                    if self.game.cat3 == self.origin:
+                        self.game.cat3 = self.target
+                    if self.game.cat4 == self.origin:
+                        self.game.cat4 = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
             elif (self.player == self.game.mouse_user):
-                    if ((self.origin in self.borde_izq_mouse) and
-                       ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
+                if ((self.origin in self.borde_izq_mouse) and
+                   ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
 
-                    if ((self.origin in self.borde_dcha) and
-                       ((self.target == self.origin + 7) or (self.target == self.origin - 9))):
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
+                if ((self.origin in self.borde_dcha) and
+                   ((self.target == self.origin + 7) or (self.target == self.origin - 9))):
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
 
-                    if ((self.origin in self.borde_bot_mouse) and 
-                       ((self.target == self.origin - 7) or (self.target == self.origin - 9))): 
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
-                    
-                    if ((self.origin in self.borde_top_mouse) and 
-                       ((self.target == self.origin + 7) or (self.target == self.origin + 9))): 
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move  
-
-                    if ((self.origin in self.esquina_ti) and (self.target == self.origin + 9)): 
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move   
-
-                    if ((self.origin in self.esquina_bd) and (self.target == self.origin - 9)): 
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move    
+                if ((self.origin in self.borde_bot_mouse) and 
+                   ((self.target == self.origin - 7) or (self.target == self.origin - 9))): 
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
                 
-                    if ((self.target == self.origin + 9) or (self.target == self.origin + 7) or
-                       (self.target == self.origin - 9) or (self.target == self.origin - 7)):
-                        self.game.moves.append(1)
-                        self.game.save()
-                        return super(Move, self).save(*args, **kwargs) #valid move
+                if ((self.origin in self.borde_top_mouse) and 
+                   ((self.target == self.origin + 7) or (self.target == self.origin + 9))): 
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move  
+
+                if ((self.origin in self.esquina_ti) and (self.target == self.origin + 9)): 
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move   
+
+                if ((self.origin in self.esquina_bd) and (self.target == self.origin - 9)): 
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move    
+            
+                if ((self.target == self.origin + 9) or (self.target == self.origin + 7) or
+                   (self.target == self.origin - 9) or (self.target == self.origin - 7)):
+                    self.game.moves.append(1)
+                    if self.game.mouse == self.origin:
+                        self.game.mouse = self.target
+                    self.game.cat_turn = not self.game.cat_turn
+                    self.game.save()
+                    return super(Move, self).save(*args, **kwargs) #valid move
             else:
                 raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
         raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")

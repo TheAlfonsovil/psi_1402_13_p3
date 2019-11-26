@@ -10,15 +10,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
 from django.http import HttpResponseForbidden
 from datamodel import constants
-from logic.forms import UserForm, SignupForm
+from logic.forms import UserForm, SignupForm, MoveForm
 from django.contrib.auth import logout
-from datamodel.models import Game, GameStatus, Move
+from datamodel.models import Game, GameStatus, Move, CounterManager, Counter
 from django.core.files import File
 import json
 
 # COMPROBAR AQUI COMO SON LAS FUNCIONES ->
 # https://psi1920-p3.herokuapp.com/mouse_cat/
  
+# Variables auxiliares para counter_service
+c_gbl = 1
+c_ses = 1
+
 def index(request):
     context_dict = {}
     return render(request, 'mouse_cat/index.html', context_dict)
@@ -55,7 +59,7 @@ def login_service(request):
                     login(request, user)
                     return redirect(reverse('index'))
                 else:
-                    return HttpResponse("Your Rango account is disabled.")
+                    return HttpResponse("Your account is disabled.")
             else:
                 user_form = UserForm()
                 context_dict = {'user_form': user_form,'error': True}
@@ -70,10 +74,12 @@ def login_service(request):
 
 @login_required(redirect_field_name='',login_url='../')
 def logout_service(request):
+    global c_ses
+    context_dict = {'user': request.user}
     # Since we know the user is logged in, we can now just log them out.
     logout(request)
-    # Take the user back to the homepage.
-    context_dict = {'user': "user"}
+    c_ses = 1
+    # Take the user back to the homepage.   
     return render(request,"mouse_cat/logout.html", context_dict)
     
 
@@ -99,8 +105,15 @@ def signup_service(request):
 
 
 def counter_service(request):
-	
-    context_dict = {}
+    global c_gbl
+    global c_ses
+   
+    # Counter.objects.all().delete()
+    counter_session = c_ses  # Counter.objects.create(value=c_ses)
+    counter_global = c_gbl # Counter.objects.create(value=c_gbl)
+    c_gbl = c_gbl + 1
+    c_ses = c_ses + 1
+    context_dict = {'counter_session': counter_session, 'counter_global': counter_global}
     return render(request,"mouse_cat/counter.html", context_dict)
 
 @login_required(redirect_field_name='',login_url='../login_service')
@@ -110,18 +123,26 @@ def create_game_service(request):
     context_dict = {'game': game}
     return render(request,"mouse_cat/new_game.html", context_dict)
 
+
 @login_required(redirect_field_name='',login_url='../login_service')
 def join_game_service(request):
     games = Game.objects.order_by('id')
+    no_game_flag = 0
+    context_dict = {}
     for game_aux in reversed(games):
-        if game_aux.status == 0:
-            game = game_aux #Created
+        if game_aux.status == 0 and game_aux.cat_user != request.user:
+            game = game_aux # 0 = Created
+            no_game_flag = 1
             break
+    if no_game_flag == 0:
+        context_dict['msg_error'] = "There is no available games"
+        return render(request,"mouse_cat/join_game.html", context_dict)
     game.mouse_user = request.user
-    game.status = 1 #Active
+    game.status = 1 # 1 = Active
     game.save()
-    context_dict = {'game': game}
+    context_dict['game'] = game
     return render(request,"mouse_cat/join_game.html", context_dict)
+
 
 @login_required(redirect_field_name='',login_url='../login_service')
 def select_game_service(request, game_id = -1):
@@ -133,57 +154,63 @@ def select_game_service(request, game_id = -1):
             context_dict['as_cat'] = as_cat
             context_dict['as_mouse'] = as_mouse
             return render(request,"mouse_cat/select_game.html", context_dict)
-        request.session['game_id'] = game_id
-       	return redirect(reverse('show_game'))
+
+        else: #lo que creiamos que era un post se ejecuta aqui como get
+            request.session['game_id'] = game_id
+            context_dict = {'game_id': game_id} 
+            return show_game_service(request)
+           	
     else:
-        #POST request redirect
-        #game_id = request.POST.get('game.id')
+        #POST
         request.session['game_id'] = game_id
-        context_dict = {'game_id': game_id}
+        context_dict = {'game_id': game_id}       
+        return redirect(reverse('show_game'))
         return render(request,"mouse_cat/game.html", context_dict)
+
 
 @login_required(redirect_field_name='',login_url='../login_service')
 def show_game_service(request):
-    game_id = request.session['game_id']
+    try:
+        game_id = request.session['game_id']
+    except:
+        context_dict = {'msg_error': "No game selected"}
+        return render(request,"mouse_cat/error.html", context_dict)
+    
     games = Game.objects.order_by('id')
     gamef = {}
-    print(game_id)
-    print(request.user)
-    print(request.user.id)
     for game in games:
         if game.id == game_id:
             gamef = game
             break
-    print(gamef)
     board = [0] * 64
     board[game.cat1] = 1
     board[game.cat2] = 1
     board[game.cat3] = 1
     board[game.cat4] = 1
     board[game.mouse] = -1
-    context_dict = {'game': gamef, 'board': board}
+    move_form = MoveForm()
+    context_dict = {'game': gamef, 'board': board, 'move_form': move_form}
     return render(request,"mouse_cat/game.html", context_dict)
 
 @login_required(redirect_field_name='',login_url='../login_service')
 def move_service(request):
     if request.method == 'POST':
-        print(request)
+        move_form = MoveForm(data=request.POST)
+        move_origin = int(request.POST.get('origin'))
+        move_target = int(request.POST.get('target'))
         games = Game.objects.order_by('id')
+
         for game in games:
-            if game.cat_user.id == request.user.id:
-	            gamef = game
-	            break
-        move = Move.objects.create(game=gamef, player=request.user, origin=request.form[0], target=request.form[1])
-        move.save()
-        context_dict = {'game': gamef, 'move_form': MoveForm()}
-        return render(request,"mouse_cat/game.html", context_dict)
+            if game.id == request.session['game_id']:
+                gamef = game
+                break    
+        try:    
+            move = Move.objects.create(game = gamef, player = request.user, origin = move_origin, target = move_target)
+        except:
+            return show_game_service(request)  
+        return show_game_service(request)  
     else:
-        context_dict = {}
-        return render(request,"mouse_cat/game.html", context_dict)
-#dos cadenas de caracteres con el nombre del usuario y su clav
-# jugador, juego, posici ́on inicial y final del movimient
-
-
+        return show_game_service(request)  
 
 
 
