@@ -26,8 +26,7 @@ class GameMoveTests(tests.BaseModelTest):
             with self.assertRaisesRegex(ValidationError, tests.MSG_ERROR_MOVE):
                 Move.objects.create(
                     game=self.game, player=no_player, origin=move["origin"], target=move["target"])
-            #self.assertEqual(self.game.moves.count(), 0)
-            self.assertEqual(len(self.game.moves), 0)
+            self.assertEqual(self.game.moves.count(), 0)
 
     def test2(self):
         """ Secuencia de movimientos correcta y actualización del estado del juego al mover """
@@ -45,8 +44,7 @@ class GameMoveTests(tests.BaseModelTest):
             n_moves += 1
             self.assertEqual(move["positions"], self.get_array_positions(self.game))
             self.assertFalse(self.game.cat_turn)
-            #self.assertEqual(self.game.moves.count(), n_moves)
-            self.assertEqual(len(self.game.moves), n_moves)
+            self.assertEqual(self.game.moves.count(), n_moves)
 
             self.game.cat_turn = not self.game.cat_turn
             self.game.save()
@@ -77,8 +75,7 @@ class GameMoveTests(tests.BaseModelTest):
                     n_moves += 1
                     self.assertEqual(self.game.cat2, target)
                     self.assertFalse(self.game.cat_turn)
-                    #self.assertEqual(self.game.moves.count(), n_moves)
-                    self.assertEqual(len(self.game.moves), n_moves)
+                    self.assertEqual(self.game.moves.count(), n_moves)
                 else:
                     with self.assertRaisesRegex(ValidationError, tests.MSG_ERROR_MOVE):
                         Move.objects.create(
@@ -104,8 +101,7 @@ class GameMoveTests(tests.BaseModelTest):
                     n_moves += 1
                     self.assertEqual(self.game.mouse, target)
                     self.assertTrue(self.game.cat_turn)
-                    #self.assertEqual(self.game.moves.count(), n_moves)
-                    self.assertEqual(len(self.game.moves), n_moves)
+                    self.assertEqual(self.game.moves.count(), n_moves)
                 else:
                     with self.assertRaisesRegex(ValidationError, tests.MSG_ERROR_MOVE):
                         Move.objects.create(
@@ -132,8 +128,7 @@ class GameMoveTests(tests.BaseModelTest):
                     n_moves += 1
                     self.assertEqual(self.get_array_positions(self.game), conf["positions"])
                     self.assertEqual(self.game.cat_turn, conf["player"] == self.users[1])
-                #self.assertEqual(self.game.moves.count(), n_moves)
-                self.assertEqual(len(self.game.moves), n_moves)
+                self.assertEqual(self.game.moves.count(), n_moves)
 
                 fail = not fail
                 self.game.cat_turn = not self.game.cat_turn
@@ -142,17 +137,17 @@ class GameMoveTests(tests.BaseModelTest):
     def test6(self):
         """ Movimientos válidos y no válidos por estado del juego """
         Move.objects.create(game=self.game, player=self.users[0], origin=0, target=9)
-        self.assertEqual(len(self.game.moves), 1)
+        self.assertEqual(self.game.moves.count(), 1)
         Move.objects.create(game=self.game, player=self.users[1], origin=59, target=52)
-        self.assertEqual(len(self.game.moves), 2)
+        self.assertEqual(self.game.moves.count(), 2)
 
         self.game.status = GameStatus.FINISHED
         self.game.save()
         with self.assertRaisesRegex(ValidationError, tests.MSG_ERROR_MOVE):
             Move.objects.create(game=self.game, player=self.users[0], origin=9, target=16)
-        self.assertEqual(len(self.game.moves), 2)
+        self.assertEqual(self.game.moves.count(), 2)
         self.game.cat_turn = False
         self.game.save()
         with self.assertRaisesRegex(ValidationError, tests.MSG_ERROR_MOVE):
             Move.objects.create(game=self.game, player=self.users[1], origin=52, target=59)
-        self.assertEqual(len(self.game.moves), 2)
+        self.assertEqual(self.game.moves.count(), 2)

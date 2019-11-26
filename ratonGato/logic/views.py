@@ -61,6 +61,10 @@ def login_service(request):
             if user: #Existe
                 if user.is_active:
                     login(request, user)
+                    if "session_counter" in request.session:
+                        request.session["session_counter"] = 0
+                    else:
+                        request.session["session_counter"] = 0
                     return redirect(reverse('index'))
                 else:
                     return HttpResponse("Your account is disabled.")

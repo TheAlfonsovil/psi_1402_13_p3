@@ -195,8 +195,8 @@ class MoveModelTests(tests.BaseModelTest):
             Move.objects.create(
                 game=game, player=move["player"], origin=move["origin"], target=move["target"])
             n_moves += 1
-            #self.assertEqual(game.moves.count(), n_moves)
-            self.assertEqual(len(game.moves), n_moves)
+            self.assertEqual(game.moves.count(), n_moves)
+            #self.assertEqual(len(game.moves), n_moves)
 
     def test2(self):
         """ Movimientos en un juego no activo """
@@ -240,7 +240,6 @@ class CounterModelTests(TestCase):
         """ No es posible crear contadores """
         Counter.objects.inc()
         Counter.objects.inc()
-        print(Counter.objects.all())
         for i in [3, 4]:
             Counter.objects.inc()
             n = Counter.objects.get(value=i)

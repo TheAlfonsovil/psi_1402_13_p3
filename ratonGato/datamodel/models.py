@@ -6,19 +6,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from . import constants
-  
-"""
-class User(models.Model):
 
-    username = models.CharField(unique=True, max_length=128)
-    password = models.CharField(unique=True, max_length=128)
+ERROR_COUNTER = "Insert not allowed|Inseción no permitida"
 
-    def save(self, *arg, **kwargs):
-        super(User, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self #mirar en los test de models como se imprime
-"""
 class GameStatus():
     CREATED = 0
     ACTIVE = 1
@@ -41,7 +31,10 @@ class Game(models.Model):
     MIN_CELL = 0
     MAX_CELL = 63
     # Moves???
-    moves = []
+    #moves = []
+    
+
+
     def save(self, *args, **kwargs):
         valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
                     31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
@@ -80,10 +73,11 @@ class Move(models.Model):
 
     origin = models.IntegerField(null=False)
     target = models.IntegerField(null=False)
-    game = models.ForeignKey(Game, related_name='game', on_delete=models.CASCADE) #, related_name='moves'
+    game = models.ForeignKey(Game, null=False, on_delete=models.CASCADE, related_name='moves')
     player = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE)
     date = models.DateField(default=django.utils.timezone.now)
-
+    valid_fields = [0, 2, 4, 6, 9, 11, 13, 15, 16, 18, 20, 22, 25, 27, 29,
+                    31, 32, 34, 36, 38, 41, 43, 46, 47, 48, 50, 52, 54, 57, 59, 61, 63]
     borde_izq = {0,16,32,48}
     borde_dcha = {15,31,47}
     borde_top_mouse = {2,4,6}
@@ -92,12 +86,11 @@ class Move(models.Model):
     borde_bot_mouse = {57,59,61}
     esquina_ti = {0}
     esquina_bd = {63}
-
     def save(self, *args, **kwargs):
         if self.game.status == GameStatus.ACTIVE:
             if (self.player == self.game.cat_user):
                 if (self.origin in self.borde_izq) and (self.target == self.origin + 9):
-                    self.game.moves.append(1)
+                    #self.game.moves.append(1)
                     if self.game.cat1 == self.origin:
                         self.game.cat1 = self.target
                     if self.game.cat2 == self.origin:
@@ -110,8 +103,8 @@ class Move(models.Model):
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
-                    self.game.moves.append(1)
+                elif (self.origin in self.borde_dcha) and (self.target == self.origin + 7):
+                    #self.game.moves.append(1)
                     if self.game.cat1 == self.origin:
                         self.game.cat1 = self.target
                     if self.game.cat2 == self.origin:
@@ -124,11 +117,11 @@ class Move(models.Model):
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if (self.origin in self.borde_bot):
+                elif (self.origin in self.borde_bot):
                     raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']") #Invalid move                
 
-                if (self.target == self.origin + 9) or (self.target == self.origin + 7):
-                    self.game.moves.append(1)
+                elif (self.target == self.origin + 9) or (self.target == self.origin + 7):
+                    #self.game.moves.append(1)
                     if self.game.cat1 == self.origin:
                         self.game.cat1 = self.target
                     if self.game.cat2 == self.origin:
@@ -140,67 +133,71 @@ class Move(models.Model):
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
+                else:
+                    raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
             elif (self.player == self.game.mouse_user):
                 if ((self.origin in self.borde_izq_mouse) and
                    ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
-                    self.game.moves.append(1)
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if ((self.origin in self.borde_dcha) and
+                elif ((self.origin in self.borde_dcha) and
                    ((self.target == self.origin + 7) or (self.target == self.origin - 9))):
-                    self.game.moves.append(1)
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
 
-                if ((self.origin in self.borde_bot_mouse) and 
+                elif ((self.origin in self.borde_bot_mouse) and 
                    ((self.target == self.origin - 7) or (self.target == self.origin - 9))): 
-                    self.game.moves.append(1)
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
                 
-                if ((self.origin in self.borde_top_mouse) and 
+                elif ((self.origin in self.borde_top_mouse) and 
                    ((self.target == self.origin + 7) or (self.target == self.origin + 9))): 
-                    self.game.moves.append(1)
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move  
 
-                if ((self.origin in self.esquina_ti) and (self.target == self.origin + 9)): 
-                    self.game.moves.append(1)
+                elif ((self.origin in self.esquina_ti) and (self.target == self.origin + 9)): 
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move   
 
-                if ((self.origin in self.esquina_bd) and (self.target == self.origin - 9)): 
-                    self.game.moves.append(1)
+                elif ((self.origin in self.esquina_bd) and (self.target == self.origin - 9)): 
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move    
             
-                if ((self.target == self.origin + 9) or (self.target == self.origin + 7) or
+                elif ((self.target == self.origin + 9) or (self.target == self.origin + 7) or
                    (self.target == self.origin - 9) or (self.target == self.origin - 7)):
-                    self.game.moves.append(1)
+                    #self.game.moves.append(1)
                     if self.game.mouse == self.origin:
                         self.game.mouse = self.target
                     self.game.cat_turn = not self.game.cat_turn
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
+                else:
+                    raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
             else:
                 raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
         raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
@@ -209,51 +206,42 @@ class Move(models.Model):
         return self #mirar en los test de models como se imprime
 
 class CounterManager(models.Manager):
-    def create(self, *args, **kwargs):
-        raise ValidationError(constants.MSG_ERROR_INSERT)
-
-    @classmethod
-    def createCounter(cls, value):
-        counter = Counter(value=value)
-        super(Counter, counter).save()
-        return counter
 
     def inc(self):
-        try:
-            field_name = 'value'
-            obj = Counter.objects.all()[:1].get()
-            obj.value+=1
-            Counter.objects.all().filter(pk=1).update(value=obj.value)
-            return obj.value
-        except ObjectDoesNotExist:
-            obj = CounterManager.createCounter(1)
-            return obj.value
+        objs = Counter.objects.all()
+        if not objs or not objs[0]:
+            obj = Counter(value=1)
+            super(Counter, obj).save()
+            return 1
+
+        else:
+            obj = objs[0]
+            current = obj.value + 1
+            obj.value = current
+            super(Counter, obj).save()
+            return current
+
+    def create(self, *args, **kwargs):
+        raise ValidationError(ERROR_COUNTER)
 
     def get_current_value(self):
-        try:
-            Counter.objects.get(pk=1)
-            val = Counter.objects.filter(pk=1).values('value').first()
-            return val['value']
-        except ObjectDoesNotExist:
-            obj = CounterManager.createCounter(0)
-            return obj.value
-
-    """def save(self, *args, **kwargs):
-        if(getattr(self, 'id')!=0):
-            raise ValidationError("Insert not allowed|Inseción no permitida")
-        return super(CounterManager, self).save(*args, **kwargs)"""
-        
+        objs = Counter.objects.all()
+        if not(not objs or not objs[0]):
+            counter = objs[0]
+            return counter.value
+        else:
+            counter = Counter(value=0)
+            super(Counter, counter).save()
+            return 0
 
 
 class Counter(models.Model):
-    value = models.IntegerField(default=0)
     objects = CounterManager()
-    """def __init__(self,value=0):
-        super(Counter, self).__init__()
-        setattr(self, 'value', value)
-        #self.save()"""
-    def save(self, *args, **kwargs):
-        raise ValidationError(constants.MSG_ERROR_INSERT)
-
+    value = models.IntegerField(blank=True, null=True)
+    
     def _str_(self):
-        return "Value: {}".format(self.value)
+        return str(self.value)
+
+    def save(self, *args, **kwargs):
+        raise ValidationError(ERROR_COUNTER)
+
