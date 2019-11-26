@@ -118,7 +118,9 @@ class Move(models.Model):
                     return super(Move, self).save(*args, **kwargs) #valid move
 
                 elif (self.origin in self.borde_bot):
-                    raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']") #Invalid move                
+                    if self.target not in self.valid_fields:
+                        raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
+                    raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
 
                 elif (self.target == self.origin + 9) or (self.target == self.origin + 7):
                     #self.game.moves.append(1)
@@ -134,7 +136,9 @@ class Move(models.Model):
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
                 else:
-                    raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
+                    if self.target not in self.valid_fields:
+                        raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
+                    raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
             elif (self.player == self.game.mouse_user):
                 if ((self.origin in self.borde_izq_mouse) and
                    ((self.target == self.origin + 9) or (self.target == self.origin - 7))):
@@ -197,9 +201,15 @@ class Move(models.Model):
                     self.game.save()
                     return super(Move, self).save(*args, **kwargs) #valid move
                 else:
-                    raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
+                    if self.target not in self.valid_fields:
+                        raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
+                    raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
             else:
+                if self.target not in self.valid_fields:
+                    raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
                 raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
+        if self.target not in self.valid_fields:
+            raise ValidationError("Invalid cell for a cat or the mouse|Gato o ratón en posición no válida")
         raise ValidationError("Move not allowed|Movimiento no permitido does not match ['Error']")
         
     def __str__(self):
