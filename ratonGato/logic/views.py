@@ -27,24 +27,28 @@ def index(request):
     context_dict = {}
     return render(request, 'mouse_cat/index.html', context_dict)
 
+"""
 def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
             return HttpResponseForbidden(errorHTTP(request, exception="Action restricted to anonymous users|Servicio restringido a usuarios anónimos"))
         else:
             return f(request)
-    return wrapped
+        return wrapped
 
 
 def errorHTTP(request, exception=None):
-    context_dict = {"msg_error": "Action restricted to anonymous users|Servicio restringido a usuarios anónimos"}
+    context_dict = {"msg_error": "<h1>Error</h1>Action restricted to anonymous users|Servicio restringido a usuarios anónimos"}
     context_dict[constants.ERROR_MESSAGE_ID] = exception
     return render(request, "mouse_cat/error.html", context_dict)
+"""
 
 
 
 #@anonymous_required
 def login_service(request):
+    if request.user.is_authenticated:
+        return HttpResponseForbidden("<h1>Error</h1>Action restricted to anonymous users|Servicio restringido a usuarios anónimos")
     if request.method == 'POST': #Tras clicar el boton de submit
         user_form = UserForm(data=request.POST)
         #recuepra datos
@@ -84,6 +88,8 @@ def logout_service(request):
 
 #@anonymous_required
 def signup_service(request):
+    if request.user.is_authenticated:
+        return HttpResponseForbidden("<h1>Error</h1>Action restricted to anonymous users|Servicio restringido a usuarios anónimos")
     if request.method == 'POST':
         user_form = SignupForm(data=request.POST)
         if user_form.is_valid():
