@@ -19,6 +19,7 @@ from django.urls import include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 from logic import views
 
 urlpatterns = [
@@ -36,3 +37,5 @@ urlpatterns = [
     path('show_game_service/', views.show_game_service, name='show_game'),
     path('move_service/', views.move_service, name='move'),
 ]
+
+urlpatterns += static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)

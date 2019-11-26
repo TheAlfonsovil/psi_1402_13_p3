@@ -29,8 +29,7 @@ SECRET_KEY = '))h!zz%@t*kb=ts&h&782*ld@5l4v)q=jeui3+5909ab&dgl9c'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [u'fathomless-shelf-18430.herokuapp.com',u'localhost',u'127.0.0.1']
 
 # Application definition
 
@@ -86,7 +85,11 @@ WSGI_APPLICATION = 'ratonGato.wsgi.application'
 # }
 
 DATABASES = {}
-DATABASES['default']= dj_database_url.config(default='postgres://alumnodb:alumnodb@localhost:5432/psi')
+if os.getenv('SQLITE', False):
+    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3','NAME': os.path.join(BASE_DIR, 'db.sqlite3'),}
+else:
+    DATABASES['default'] = dj_database_url.config(default='postgres://alumnodb:alumnodb@localhost:5432/psi')
+
 
 
 # Password validation
@@ -126,3 +129,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT =  os.path.join(BASE_DIR, 'staticHeroku')
